@@ -57,6 +57,7 @@ class RoShamBoPlayer {
         // can not alter/delete any of the methods/variables currently implemented.
 
         // Just return rock, no matter what.
+        return "rock";
         int rand = (int) (Math.random() * 3);
         if (rand == 0)
             return "rock";
