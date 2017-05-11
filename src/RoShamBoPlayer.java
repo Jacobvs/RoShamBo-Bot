@@ -52,12 +52,6 @@ class RoShamBoPlayer {
     }
 
     public String makeMove() {
-        // your code here
-        // You can create new helper methods or instance variables,but you 
-        // can not alter/delete any of the methods/variables currently implemented.
-
-        // Just return rock, no matter what.
-        return "rock";
         int rand = (int) (Math.random() * 3);
         if (rand == 0)
             return "rock";
@@ -65,6 +59,7 @@ class RoShamBoPlayer {
             return "paper";
         else
             return "scissors";
+
     }
 
 
