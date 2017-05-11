@@ -15,12 +15,13 @@ public class RoShamBoPlayerJacksonAndJacob extends RoShamBoPlayer {
     public String makeMove() {
         int tmp = 0;
         calcWinLoss();
-        if (getMyMoves().size() != 0)
+        if (getMyMoves().size() != 0) {
             tmp = didIWin(getMyMoves().get(getMyMoves().size() - 1), getOpponentMoves().get(getOpponentMoves().size() - 1));
-        if (tmp == -1)
-            lossRun++;
-        else if (tmp == 1)
-            lossRun = 0;
+            if (tmp == -1)
+                lossRun++;
+            else if (tmp == 1)
+                lossRun = 0;
+        }
         if (getMyMoves().size() < 25)
             return makeRandomMove();
         if (getMyMoves().size() < 50)
