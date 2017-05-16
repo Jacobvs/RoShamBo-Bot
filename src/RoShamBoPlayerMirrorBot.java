@@ -12,11 +12,12 @@ public class RoShamBoPlayerMirrorBot extends RoShamBoPlayer {
     private RoShamBoPlayer[] roshamBoPlayerArr = null;
     private RoShamBoPlayer opponent = null;
 
-    private int countGames = 0;
-    private int rounds = 0;
-    private int prevRoundCount = -1;
+    private int matchNum = -1;
+    private int roundNum = 0;
+    private int roundCount = 1000;
     private int myPos = -1;
 
+    private Method opponentMethod;
 
     public RoShamBoPlayerMirrorBot(String player) {
         super(player);
@@ -43,10 +44,10 @@ public class RoShamBoPlayerMirrorBot extends RoShamBoPlayer {
         RoShamBoPlayer tmp = new RoShamBoPlayer("tmp");
         try {
             roshamBoPlayerArr = (RoShamBoPlayer[]) roShamBoPlayers.get(tmp);
-            rounds = (int) f_rounds.get(0);
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         }
+
 
         if (myPos == -1) {
             for (int i = 0; i < roshamBoPlayerArr.length; i++) {
@@ -58,45 +59,50 @@ public class RoShamBoPlayerMirrorBot extends RoShamBoPlayer {
         }
 
 
-        prevRoundCount = 0;
-        int tmpCountGames = -1;
-        boolean exit = false;
-        for (int i = 0; i < roshamBoPlayerArr.length; i++) {
-            for (int j = i + 1; j < roshamBoPlayerArr.length; j++) {
-                if (roshamBoPlayerArr[i].getName().equals(this.getName()) || roshamBoPlayerArr[j].getName().equals(this.getName())) {
-                    tmpCountGames++;
-                    if (tmpCountGames == countGames) {
-                        countGames++;
-                        if (roshamBoPlayerArr[i].getName().equals(this.getName())) {
+        if (roundNum % roundCount == 0) {
+            matchNum++;
+            int tmpMatchNum = 0;
+            boolean breakFlag = false;
+            for (int i = 0; i < roshamBoPlayerArr.length; i++) {
+                for (int j = i + 1; j < roshamBoPlayerArr.length; j++) {
+                    if (roshamBoPlayerArr[i].getName().equals(this.getName())) {
+                        if (tmpMatchNum == matchNum) {
                             opponent = roshamBoPlayerArr[j];
-                            exit = true;
+                            breakFlag = true;
                             break;
+                        } else {
+                            tmpMatchNum++;
+                        }
+                    }
+                    if (roshamBoPlayerArr[j].getName().equals(this.getName())) {
+                        if (tmpMatchNum == matchNum) {
+                            opponent = roshamBoPlayerArr[i];
+                            breakFlag = true;
+                            break;
+                        } else {
+                            tmpMatchNum++;
                         }
                     }
                 }
-            }
-            if (exit == true) {
-                break;
+                if (breakFlag) {
+                    break;
+                }
             }
         }
 
-        Class opponentClass = opponent.getClass();
-        Method opponentMethod = null;
-
         try {
-            opponentMethod = opponentClass.getMethod("makeMove");
+            opponentMethod = opponent.getClass().getMethod("makeMove");
         } catch (NoSuchMethodException e) {
             e.printStackTrace();
         }
 
-        try {
-            opponentMove = (String) opponentMethod.invoke(this, null);
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
+        opponent.reset();
+        for (int i = 0; i < getOpponentMoves().size(); i++) {
+            opponent.addMyMove(getOpponentMoves().get(i));
+            opponent.addOpponentMove(getMyMoves().get(i));
         }
 
+        opponentMove = opponent.makeMove();
 
         return getOppositeMove(opponentMove);
     }
