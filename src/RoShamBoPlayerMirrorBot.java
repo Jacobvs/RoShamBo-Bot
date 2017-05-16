@@ -43,7 +43,7 @@ public class RoShamBoPlayerMirrorBot extends RoShamBoPlayer {
         RoShamBoPlayer tmp = new RoShamBoPlayer("tmp");
         try {
             roshamBoPlayerArr = (RoShamBoPlayer[]) roShamBoPlayers.get(tmp);
-            rounds = (int) f_rounds.get((int)0);
+            rounds = (int) f_rounds.get(0);
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         }
