@@ -56,7 +56,8 @@ public class RoShamBoMatch
     
     
     
-    private void calculateWinsLosses() {
+    private void calculateWinsLosses()
+    {
         for (int i = 0; i < player1.getMyMoves().size(); i++)
         {
             String p1Move = player1.getMyMoves().get(i);

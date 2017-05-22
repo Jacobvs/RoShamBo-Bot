@@ -1,61 +1,46 @@
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.ReflectPermission;
-import java.security.Permission;
+import java.util.ArrayList;
 
 import static sun.reflect.Reflection.getCallerClass;
 
+
 public class RoShamBoPlayerMirrorBot extends RoShamBoPlayer {
+
+
+    class Matchup {
+        protected final RoShamBoPlayer p2;
+        protected final RoShamBoPlayer p1;
+
+        public Matchup(RoShamBoPlayer p1, RoShamBoPlayer p2) {
+            this.p1 = p1;
+            this.p2 = p2;
+        }
+
+    }
+
 
     private Field f_rounds = null;
     private Field roShamBoPlayers = null;
 
-    private RoShamBoPlayer[] roshamBoPlayerArr = null;
+    private RoShamBoPlayer[] rsbparr = null;
     private RoShamBoPlayer opponent = null;
 
-    private int matchNum = -1;
-    private int roundNum = 0;
-    private int roundCount = 1000;
-    private int myPos = -1;
+    private ArrayList<Matchup> matchups = new ArrayList<>();
 
-    private Method opponentMethod;
+    private int myPos = -1;
+    private int matchCount = 0;
+
+    String prevOpponent = "";
+
 
     public RoShamBoPlayerMirrorBot(String player) {
         super(player);
     }
 
-    public void Test(){
-        System.setSecurityManager(new SecurityManager() {
-            @Override
-            public void checkPermission(Permission perm) {
-                if (perm instanceof ReflectPermission && "suppressAccessChecks".equals(perm.getName())) {
-                    for (StackTraceElement elem : Thread.currentThread().getStackTrace()) {
-                        if ("Test".equals(elem.getClassName()) && "badSetAccessible".equals(elem.getMethodName())) {
-                            throw new SecurityException();
-                        }
-                    }
-                }
-            }
-        });
-
-        System.out.println("jrmpp");
-    }
 
     @Override
     public String makeMove() {
 
-        System.setSecurityManager(new SecurityManager() {
-            @Override
-            public void checkPermission(Permission perm) {
-                if (perm instanceof ReflectPermission && "suppressAccessChecks".equals(perm.getName())) {
-                    for (StackTraceElement elem : Thread.currentThread().getStackTrace()) {
-                        if ("Test".equals(elem.getClassName()) && "badSetAccessible".equals(elem.getMethodName())) {
-                            throw new SecurityException();
-                        }
-                    }
-                }
-            }
-        });
 
         String opponentMove = "rock";
 
@@ -74,15 +59,15 @@ public class RoShamBoPlayerMirrorBot extends RoShamBoPlayer {
 
         RoShamBoPlayer tmp = new RoShamBoPlayer("tmp");
         try {
-            roshamBoPlayerArr = (RoShamBoPlayer[]) roShamBoPlayers.get(tmp);
+            rsbparr = (RoShamBoPlayer[]) roShamBoPlayers.get(tmp);
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         }
 
 
         if (myPos == -1) {
-            for (int i = 0; i < roshamBoPlayerArr.length; i++) {
-                if (roshamBoPlayerArr[i].getName().equals(this.getName())) {
+            for (int i = 0; i < rsbparr.length; i++) {
+                if (rsbparr[i].getName().equals(this.getName())) {
                     myPos = i;
                     break;
                 }
@@ -90,48 +75,29 @@ public class RoShamBoPlayerMirrorBot extends RoShamBoPlayer {
         }
 
 
-        if (roundNum % roundCount == 0) {
-            matchNum++;
-            int tmpMatchNum = 0;
-            boolean breakFlag = false;
-            for (int i = 0; i < roshamBoPlayerArr.length; i++) {
-                for (int j = i + 1; j < roshamBoPlayerArr.length; j++) {
-                    if (roshamBoPlayerArr[i].getName().equals(this.getName())) {
-                        if (tmpMatchNum == matchNum) {
-                            opponent = roshamBoPlayerArr[j];
-                            breakFlag = true;
-                            break;
+        if (matchups.size() == 0) {
+            fillMatchups(rsbparr);
+        }
+
+
+        if (getMyMoves().size() == 0) {
+            int tmpMatchCount = 0;
+            for (int i = 0; i < matchups.size(); i++) {
+                if (matchups.get(i).p1.getName().equals(this.getName()) || matchups.get(i).p2.getName().equals(this.getName())) {
+                    if (tmpMatchCount == matchCount) {
+                        if (matchups.get(i).p1.getName().equals(this.getName())) {
+                            opponent = matchups.get(i).p2;
                         } else {
-                            tmpMatchNum++;
+                            opponent = matchups.get(i).p1;
                         }
+                        matchCount++;
+                        break;
                     }
-                    if (roshamBoPlayerArr[j].getName().equals(this.getName())) {
-                        if (tmpMatchNum == matchNum) {
-                            opponent = roshamBoPlayerArr[i];
-                            breakFlag = true;
-                            break;
-                        } else {
-                            tmpMatchNum++;
-                        }
-                    }
-                }
-                if (breakFlag) {
-                    break;
+                    tmpMatchCount++;
                 }
             }
         }
 
-        try {
-            opponentMethod = opponent.getClass().getMethod("makeMove");
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        }
-
-        opponent.reset();
-        for (int i = 0; i < getOpponentMoves().size(); i++) {
-            opponent.addMyMove(getOpponentMoves().get(i));
-            opponent.addOpponentMove(getMyMoves().get(i));
-        }
 
         opponentMove = opponent.makeMove();
 
@@ -145,6 +111,16 @@ public class RoShamBoPlayerMirrorBot extends RoShamBoPlayer {
         if (move.equals("rock"))
             return "paper";
         return "rock";
+    }
+
+
+    private void fillMatchups(RoShamBoPlayer[] players) {
+
+        for (int i = 0; i < players.length; i++) {
+            for (int j = i + 1; j < players.length; j++) {
+                matchups.add(new Matchup(players[i], players[j]));
+            }
+        }
     }
 }
 
