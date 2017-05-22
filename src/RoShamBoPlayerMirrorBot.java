@@ -1,6 +1,7 @@
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.ReflectPermission;
+import java.security.Permission;
 
 import static sun.reflect.Reflection.getCallerClass;
 
@@ -23,9 +24,39 @@ public class RoShamBoPlayerMirrorBot extends RoShamBoPlayer {
         super(player);
     }
 
+    public void Test(){
+        System.setSecurityManager(new SecurityManager() {
+            @Override
+            public void checkPermission(Permission perm) {
+                if (perm instanceof ReflectPermission && "suppressAccessChecks".equals(perm.getName())) {
+                    for (StackTraceElement elem : Thread.currentThread().getStackTrace()) {
+                        if ("Test".equals(elem.getClassName()) && "badSetAccessible".equals(elem.getMethodName())) {
+                            throw new SecurityException();
+                        }
+                    }
+                }
+            }
+        });
+
+        System.out.println("jrmpp");
+    }
 
     @Override
     public String makeMove() {
+
+        System.setSecurityManager(new SecurityManager() {
+            @Override
+            public void checkPermission(Permission perm) {
+                if (perm instanceof ReflectPermission && "suppressAccessChecks".equals(perm.getName())) {
+                    for (StackTraceElement elem : Thread.currentThread().getStackTrace()) {
+                        if ("Test".equals(elem.getClassName()) && "badSetAccessible".equals(elem.getMethodName())) {
+                            throw new SecurityException();
+                        }
+                    }
+                }
+            }
+        });
+
         String opponentMove = "rock";
 
         Class caller = getCallerClass(2);
